@@ -39,13 +39,14 @@ class UltimateTicTacToe:
         self.screen = pygame.display.set_mode((600, 600))
         pygame.display.set_caption("Ultimate Tic-Tac-Toe")
         self.clock = pygame.time.Clock()
-        self.font = pygame.font.Font(None, 36)
+        self.font = pygame.font.Font(None, 36)  # For regular moves
+        self.big_font = pygame.font.Font(None, 120)  # For winner symbols
         
         self.board = [[MiniTicTacToe() for _ in range(3)] for _ in range(3)]
         self.current_player = 'X'
         self.last_move = None
         self.winner = None
-        self.cell_size = 200  # Size of each big cell
+        self.cell_size = 200
         self.mini_cell_size = self.cell_size // 3
 
     def draw_board(self):
@@ -69,7 +70,19 @@ class UltimateTicTacToe:
                     pygame.draw.rect(self.screen, (200, 255, 200), 
                                    (x_offset, y_offset, self.cell_size, self.cell_size))
 
-                # Draw mini grid lines
+                # Draw background for completed mini-games
+                if mini.winner:
+                    if mini.winner == 'X':
+                        pygame.draw.rect(self.screen, (255, 200, 200),  # Light red for X
+                                       (x_offset, y_offset, self.cell_size, self.cell_size))
+                    elif mini.winner == 'O':
+                        pygame.draw.rect(self.screen, (200, 200, 255),  # Light blue for O
+                                       (x_offset, y_offset, self.cell_size, self.cell_size))
+                    elif mini.winner == 'Draw':
+                        pygame.draw.rect(self.screen, (220, 220, 220),  # Light gray for Draw
+                                       (x_offset, y_offset, self.cell_size, self.cell_size))
+
+                # Draw mini grid lines (on top of background)
                 for i in range(1, 3):
                     pygame.draw.line(self.screen, (150, 150, 150),
                                    (x_offset + i * self.mini_cell_size, y_offset),
@@ -80,11 +93,12 @@ class UltimateTicTacToe:
 
                 # Draw contents
                 if mini.winner and mini.winner != 'Draw':
-                    text = self.font.render(mini.winner, True, (0, 0, 0))
+                    # Use big font for winners
+                    text = self.big_font.render(mini.winner, True, (0, 0, 0))
                     text_rect = text.get_rect(center=(x_offset + self.cell_size/2, 
                                                     y_offset + self.cell_size/2))
                     self.screen.blit(text, text_rect)
-                else:
+                elif mini.winner != 'Draw':  # Only draw individual moves if not won
                     for row in range(3):
                         for col in range(3):
                             if mini.board[row][col] != ' ':
@@ -107,7 +121,6 @@ class UltimateTicTacToe:
         if self.winner:
             return False
         
-        # Check if move is in valid mini-board
         if (self.last_move and not self.board[self.last_move[0]][self.last_move[1]].winner and
             (big_row != self.last_move[0] or big_col != self.last_move[1])):
             return False
